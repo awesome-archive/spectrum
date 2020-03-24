@@ -1,30 +1,73 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
 import theme from 'shared/theme';
-import Icon from '../icons';
-import { hexa, Shadow, FlexRow, FlexCol, zIndex, Tooltip } from '../globals';
+import Icon from 'src/components/icon';
+import { hexa, FlexRow, FlexCol, zIndex } from '../globals';
+import {
+  COL_GAP,
+  MAX_WIDTH,
+  MEDIA_BREAK,
+  TITLEBAR_HEIGHT,
+  NAVBAR_EXPANDED_WIDTH,
+  NAVBAR_WIDTH,
+  MIN_WIDTH_TO_EXPAND_NAVIGATION,
+} from 'src/components/layout';
 
 export const DropzoneWrapper = styled.div`
-  padding: 0 32px;
-  position: relative;
+  position: sticky;
   height: 100%;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom 0;
 `;
 
-export const DropImageOverlay = (props: { visible: boolean }) => {
+export const DropImageOverlay = (props: {
+  visible: boolean,
+  className?: string,
+}) => {
   return (
-    <DropImageOverlayWrapper visible={props.visible}>
+    <DropImageOverlayWrapper
+      visible={props.visible}
+      className={props.className}
+    >
       <Icon glyph="photo" />
       <h3>Drop image to upload</h3>
     </DropImageOverlayWrapper>
   );
 };
 
+export const Wrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  z-index: 9995;
+  position: fixed;
+  max-width: ${MAX_WIDTH}px;
+  left: ${NAVBAR_WIDTH + COL_GAP}px;
+  width: 100%;
+  max-width: calc(100% - ${NAVBAR_WIDTH * 2}px);
+
+  @media (max-width: ${MEDIA_BREAK}px) {
+    height: calc(100vh - ${TITLEBAR_HEIGHT}px);
+    top: ${TITLEBAR_HEIGHT}px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: 100%;
+  }
+
+  @media (min-width: ${MIN_WIDTH_TO_EXPAND_NAVIGATION}px) {
+    left: ${NAVBAR_EXPANDED_WIDTH + COL_GAP}px;
+    max-width: calc(100% - ${NAVBAR_EXPANDED_WIDTH * 2}px);
+  }
+`;
+
 export const DropImageOverlayWrapper = styled.div`
   position: absolute;
-  top: 0;
-  left: 16px;
-  right: 16px;
+  top: -32px;
   bottom: 0;
+  left: -32px;
+  right: -32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,99 +89,67 @@ export const DropImageOverlayWrapper = styled.div`
         `}
 `;
 
-export const ComposerSlider = styled.div`
-  display: ${props => (props.isSlider ? 'none' : 'block')};
-  ${props =>
-    props.isSlider &&
-    props.isOpen &&
-    css`
-      display: block;
-      position: fixed;
-      width: 50%;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      z-index: ${zIndex.composer};
-    `}
-`;
-
 export const Overlay = styled.div`
-  ${props =>
-    props.isOpen
-      ? `
-      position: fixed;
-      top: 48px;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 3000;
-      background: #000;
-      pointer-events: auto;
-      opacity: 0.4;
-    `
-      : `
-      opacity: 0;
-      pointer-events: none;
-
-    `};
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.24);
+  z-index: 9994;
 `;
 
 export const Container = styled(FlexCol)`
-  background-color: ${theme.bg.default};
-  display: grid;
-  grid-template-rows: 50px 1fr 64px;
-  grid-template-columns: 100%;
-  grid-template-areas: 'header' 'body' 'footer';
-  align-self: stretch;
-  flex: auto;
-  overflow: hidden;
-  height: ${props => (props.isSlider ? '100vh' : 'calc(100vh - 48px)')};
+  display: flex;
+  height: 100%;
+  max-height: 100vh;
+  width: 100%;
+  max-width: ${MAX_WIDTH + 32}px;
+  background: ${theme.bg.wash};
+  height: calc(100vh);
+  z-index: 9995;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.08), 4px 0 12px rgba(0, 0, 0, 0.08);
 
-  @media (max-width: 768px) {
-    grid-template-rows: 48px 64px 1fr 64px;
-    grid-template-areas: 'title' 'header' 'body' 'footer';
+  @media (max-width: ${MEDIA_BREAK}px) {
     max-width: 100vw;
-    height: 100vh;
+    max-height: calc(100vh - ${TITLEBAR_HEIGHT}px);
+    padding: 0;
+    box-shadow: 0;
   }
 `;
 
 export const DesktopLink = styled.a`
   display: flex;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MEDIA_BREAK}px) {
     display: none;
   }
 `;
 
 export const ButtonRow = styled(FlexRow)`
-  @media (max-width: 768px) {
+  @media (max-width: ${MEDIA_BREAK}px) {
     justify-content: flex-end;
   }
 `;
 
-export const Actions = styled(FlexCol)`
+export const Actions = styled.div`
   background: ${theme.bg.wash};
-  border-top: 2px solid ${theme.bg.border};
-  padding: 8px 32px 8px 16px;
-  border-radius: 0;
+  border-top: 1px solid ${theme.bg.border};
+  padding: 8px 16px;
   align-self: stretch;
-  display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  position: relative;
-  grid-area: footer;
-  z-index: ${zIndex.composer};
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex: 1 0 auto;
+  height: 56px;
+  min-height: 56px;
+  max-height: 56px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MEDIA_BREAK}px) {
     padding: 8px;
     z-index: ${zIndex.chrome + 1};
-    border-radius: 0;
-    border: 0;
-    box-shadow: none;
-    background-color: transparent;
 
     > ${ButtonRow} {
       width: 100%;
@@ -162,38 +173,59 @@ export const InputHints = styled(FlexRow)`
 
 export const Dropdowns = styled(FlexRow)`
   display: flex;
+  flex: 1;
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
   align-items: center;
-  grid-area: header;
   background-color: ${theme.bg.wash};
-  box-shadow: ${Shadow.low} ${props => hexa(props.theme.bg.reverse, 0.15)};
-  z-index: ${zIndex.composer};
-  grid-area: header;
+  border-bottom: 1px solid ${theme.bg.border};
+  z-index: 9999;
+  border-bottom: 1px solid ${theme.bg.border};
+  padding: 8px;
+  padding-left: 12px;
+  font-size: 16px;
 
-  span {
-    font-size: 14px;
-    font-weight: 500;
-    color: ${theme.text.alt};
-    margin-left: 16px;
-    line-height: 1;
-    vertical-align: middle;
-    position: relative;
-    top: 1px;
-
-    @media (max-width: 768px) {
-      display: none;
-    }
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
+  @media (max-width: ${MEDIA_BREAK}px) {
     justify-content: flex-start;
   }
 `;
 
+export const DropdownsLabel = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: ${theme.text.secondary};
+  line-height: 1;
+  vertical-align: middle;
+  position: relative;
+  top: 1px;
+
+  @media (max-width: ${MEDIA_BREAK}px) {
+    display: none;
+  }
+`;
+
+export const CommunityPreview = styled.div`
+  font-size: 14px;
+  font-weight: 500;
+  color: ${theme.text.secondary};
+  margin-left: 16px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  position: relative;
+
+  @media (max-width: ${MEDIA_BREAK}px) {
+    margin-left: 0;
+  }
+`;
+
+export const ChannelPreview = styled(CommunityPreview)`
+  margin-left: 0;
+`;
+
 const Selector = styled.select`
-  max-width: 196px;
   display: inline-block;
-  flex: none;
   border: none;
   box-shadow: none;
   -webkit-appearance: none;
@@ -205,37 +237,48 @@ const Selector = styled.select`
   font-weight: 500;
   font-size: 14px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MEDIA_BREAK}px) {
     flex: auto;
-    max-width: calc(50% - 12px);
+    font-size: 16px; /* has to be 16px to avoid zoom on iOS */
   }
 `;
 
 export const RequiredSelector = styled(Selector)`
   padding: 8px 12px;
-  border: 2px solid ${theme.bg.border};
+  max-height: 38px;
+  max-width: 212px;
+  line-height: 1.2;
+  border: 1px solid
+    ${props => (props.emphasize ? theme.brand.alt : theme.bg.border)};
   border-radius: 8px;
-  color: ${theme.text.default};
-  background-color: ${theme.bg.default};
-`;
+  color: ${props => (props.emphasize ? theme.brand.alt : theme.text.default)};
+  background-color: ${props =>
+    props.disabled ? theme.bg.wash : theme.bg.default};
 
-export const OptionalSelector = styled(Selector)`
-  color: ${theme.text.alt};
-  margin-left: 16px;
-  background-color: transparent;
+  &:focus {
+    transition: box-shadow 0.2s ease-in-out;
+    box-shadow: 0 0 0 2px ${theme.bg.default},
+      0 0 0 4px ${hexa(theme.brand.alt, 0.24)};
+  }
+
+  &:active {
+    transition: box-shadow 0.2s ease-in-out;
+    box-shadow: 0 0 0 2px ${theme.bg.default},
+      0 0 0 4px ${hexa(theme.brand.alt, 0.64)};
+  }
 `;
 
 export const ThreadInputs = styled(FlexCol)`
   position: relative;
-  grid-area: body;
-  overflow-y: scroll;
   padding: 32px;
-  padding-top: 8px;
-  margin-left: -32px;
-  margin-right: -32px;
-  width: calc(100% + 64px);
+  padding-bottom: 0;
   background-color: ${theme.bg.default};
   z-index: ${zIndex.composer};
+  height: 100%;
+
+  @media (max-width: ${MEDIA_BREAK}px) {
+    padding: 24px;
+  }
 `;
 
 export const ThreadTitle = {
@@ -243,12 +286,13 @@ export const ThreadTitle = {
   padding: '0',
   outline: 'none',
   border: '0',
-  lineHeight: '1.3',
+  lineHeight: '1.4',
   fontWeight: '600',
   boxShadow: 'none',
   width: '100%',
   color: '#16171A',
   whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
   minHeight: '34px',
   flex: 'none',
   display: 'inline-block',
@@ -257,21 +301,22 @@ export const ThreadTitle = {
 };
 
 export const ThreadDescription = {
-  fontSize: '16px',
+  fontSize: '16px', // has to be 16px to avoid zoom on iOS
   fontWeight: '400',
   width: '100%',
   display: 'inline-block',
-  lineHeight: '1.5',
+  lineHeight: '1.4',
   outline: 'none',
   border: '0',
   boxShadow: 'none',
   color: '#16171A',
   whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
   overflowY: 'scroll',
   position: 'relative',
   // NOTE(@mxstbr): Magic value to make the margin between
   // the thread title and body match the preview
-  marginTop: '12px',
+  marginTop: '9px',
 };
 
 export const DisabledWarning = styled.div`
@@ -285,4 +330,16 @@ export const DisabledWarning = styled.div`
   font-weight: 500;
   background: ${props => hexa(props.theme.warn.default, 0.1)};
   color: ${theme.warn.default};
+`;
+
+export const RenderWrapper = styled.div``;
+
+export const InputsGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  overflow-y: auto;
+  background: ${theme.bg.default};
+  padding-bottom: 48px;
 `;

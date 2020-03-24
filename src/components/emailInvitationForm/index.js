@@ -4,14 +4,13 @@ import compose from 'recompose/compose';
 import { connect } from 'react-redux';
 import Textarea from 'react-textarea-autosize';
 import { addToastWithTimeout } from 'src/actions/toasts';
-import Icon from '../icons';
+import Icon from 'src/components/icon';
 import isEmail from 'validator/lib/isEmail';
 import sendCommunityEmailInvitations from 'shared/graphql/mutations/community/sendCommunityEmailInvites';
-import { Button } from '../buttons';
+import { OutlineButton } from 'src/components/button';
 import { Error } from '../formElements';
 import { SectionCardFooter } from 'src/components/settingsViews/style';
 import { withCurrentUser } from 'src/components/withCurrentUser';
-import MediaInput from 'src/components/mediaInput';
 import {
   EmailInviteForm,
   EmailInviteInput,
@@ -19,7 +18,6 @@ import {
   ActionAsLabel,
   ActionHelpText,
   RemoveRow,
-  CustomMessageToggle,
   CustomMessageTextAreaStyles,
   HiddenInput,
 } from './style';
@@ -302,6 +300,13 @@ class EmailInvitationForm extends React.Component<Props, State> {
         })
         .filter(Boolean);
 
+      if (validated.length > 5000) {
+        this.setState({
+          importError: 'Cannot invite more than 5,000 emails.',
+        });
+        return;
+      }
+
       const consolidated = [
         ...this.state.contacts.filter(
           contact =>
@@ -377,7 +382,7 @@ class EmailInvitationForm extends React.Component<Props, State> {
           <Icon size={20} glyph="upload" /> Import emails
         </ActionAsLabel>
         <ActionHelpText>
-          Upload a .json file with an array of email addresses.
+          Upload a .json file with an array of up to 5,000 email addresses.
         </ActionHelpText>
 
         <Action onClick={this.toggleCustomMessage}>
@@ -409,13 +414,13 @@ class EmailInvitationForm extends React.Component<Props, State> {
         )}
 
         <SectionCardFooter>
-          <Button
+          <OutlineButton
             loading={isLoading}
             onClick={this.sendInvitations}
             disabled={hasCustomMessage && customMessageError}
           >
-            Send Invitations
-          </Button>
+            {isLoading ? 'Sending...' : 'Send Invitations'}
+          </OutlineButton>
         </SectionCardFooter>
       </div>
     );

@@ -8,7 +8,7 @@ import addThreadReactionMutation from 'shared/graphql/mutations/thread/addThread
 import removeThreadReactionMutation from 'shared/graphql/mutations/thread/removeThreadReaction';
 import { openModal } from 'src/actions/modals';
 import { addToastWithTimeout } from 'src/actions/toasts';
-import Icon from 'src/components/icons';
+import Icon from 'src/components/icon';
 import { LikeButtonWrapper, LikeCountWrapper, CurrentCount } from './style';
 import { withCurrentUser } from 'src/components/withCurrentUser';
 
@@ -25,7 +25,7 @@ class LikeButtonPure extends React.Component<LikeButtonProps> {
     const { thread, dispatch, currentUser } = this.props;
 
     if (!currentUser || !currentUser.id) {
-      return dispatch(openModal('CHAT_INPUT_LOGIN_MODAL', {}));
+      return dispatch(openModal('LOGIN_MODAL', {}));
     }
 
     const { hasReacted } = thread.reactions;
@@ -53,11 +53,8 @@ class LikeButtonPure extends React.Component<LikeButtonProps> {
     const { hasReacted, count } = thread.reactions;
 
     return (
-      <LikeButtonWrapper
-        hasReacted={hasReacted}
-        onClick={this.handleClick}
-        icon={'thumbsup'}
-      >
+      <LikeButtonWrapper hasReacted={hasReacted} onClick={this.handleClick}>
+        <Icon style={{ pointerEvents: 'none' }} glyph="thumbsup" size={24} />
         {hasReacted ? 'Liked' : 'Like'}
         <CurrentCount>{count}</CurrentCount>
       </LikeButtonWrapper>
@@ -79,15 +76,14 @@ type LikeCountProps = {
 
 export const LikeCount = (props: LikeCountProps) => {
   const { active, thread } = props;
-  const { count } = thread.reactions;
+  const { count, hasReacted } = thread.reactions;
   return (
     <LikeCountWrapper active={active}>
-      <Icon
-        glyph={'thumbsup'}
-        size={24}
-        tipText={`${count} likes`}
-        tipLocation={'top-right'}
-      />
+      {hasReacted ? (
+        <Icon glyph={'thumbsup-fill'} size={24} />
+      ) : (
+        <Icon glyph={'thumbsup'} size={24} />
+      )}
       <CurrentCount>{count || '0'}</CurrentCount>
     </LikeCountWrapper>
   );

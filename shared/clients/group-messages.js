@@ -39,7 +39,7 @@ export const sortAndGroupMessages = (messages: Array<Output>) => {
 
     const sameUser =
       messages[i].author.user.id !== 'robo' &&
-      messages[i].author.user.id === checkId; //=> boolean
+      messages[i].author.user.id === checkId;
     const oldMessage = (current: Object, previous: Object) => {
       //=> boolean
       /*
@@ -59,7 +59,7 @@ export const sortAndGroupMessages = (messages: Array<Output>) => {
       */
       const c = new Date(current.timestamp).getTime();
       const p = new Date(previous.timestamp).getTime();
-      return c > p + 3600000; // one hour;
+      return c > p + 3600000 * 6; // six hours;
     };
 
     // if we are evaulating a bubble from the same user
@@ -81,7 +81,7 @@ export const sortAndGroupMessages = (messages: Array<Output>) => {
           // populate the new batch of messages with this next old message
           newArray.push(messages[i]);
         } else {
-          // if the message isn't older than our prefered variance,
+          // if the message isn't older than our preferred variance,
           // we keep populating the same batch of messages
           newArray.push(messages[i]);
         }
@@ -101,7 +101,7 @@ export const sortAndGroupMessages = (messages: Array<Output>) => {
       } else {
         // clear the messages array from the previous user
         newArray = [];
-        // and start a new batch of messages from the currently evaulating user
+        // and start a new batch of messages from the currently evaluating user
         newArray.push(messages[i]);
       }
 

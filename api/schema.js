@@ -62,6 +62,7 @@ const messageSubscriptions = require('./subscriptions/message');
 const notificationSubscriptions = require('./subscriptions/notification');
 const directMessageThreadSubscriptions = require('./subscriptions/directMessageThread');
 const threadSubscriptions = require('./subscriptions/thread');
+const communitySubscriptions = require('./subscriptions/community');
 
 const rateLimit = require('./utils/rate-limit-directive').default;
 
@@ -73,6 +74,7 @@ const Root = /* GraphQL */ `
     window: Int
     message: String
     identityArgs: [String]
+    arrayLengthField: String
   ) on FIELD_DEFINITION
 
   # The dummy queries and mutations are necessary because
@@ -131,7 +133,8 @@ const resolvers = merge(
   messageSubscriptions,
   notificationSubscriptions,
   directMessageThreadSubscriptions,
-  threadSubscriptions
+  threadSubscriptions,
+  communitySubscriptions
 );
 
 if (process.env.NODE_ENV === 'development' && debug.enabled) {

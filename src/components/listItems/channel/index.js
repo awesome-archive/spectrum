@@ -7,10 +7,9 @@ import {
   ChannelActions,
 } from './style';
 import type { ChannelInfoType } from 'shared/graphql/fragments/channel/channelInfo';
-import { ChannelHoverProfile } from 'src/components/hoverProfile';
 
 type Props = {
-  children: React.Node,
+  children: React$Node,
   channel: ChannelInfoType,
 };
 
@@ -21,12 +20,7 @@ class ChannelListItem extends React.Component<Props> {
     return (
       <ChannelContainer>
         <ChannelNameLink to={`/${channel.community.slug}/${channel.slug}`}>
-          <ChannelHoverProfile
-            id={channel.id}
-            style={{ flex: '1 1 auto', maxWidth: 'calc(100% - 32px)' }}
-          >
-            <ChannelName>{channel.name}</ChannelName>
-          </ChannelHoverProfile>
+          <ChannelName>{channel.name}</ChannelName>
         </ChannelNameLink>
 
         {children && <ChannelActions>{children}</ChannelActions>}

@@ -1,6 +1,5 @@
 // @flow
 import theme from 'shared/theme';
-// $FlowFixMe
 import styled from 'styled-components';
 import {
   FlexRow,
@@ -9,8 +8,9 @@ import {
   Shadow,
   hexa,
   zIndex,
-} from '../../components/globals';
-import { Button } from '../../components/buttons';
+} from 'src/components/globals';
+import { Button } from 'src/components/button';
+import { MEDIA_BREAK } from 'src/components/layout';
 
 export const Title = styled.h1`
   color: ${theme.text.default};
@@ -195,12 +195,15 @@ export const SigninLink = styled.span`
 
 export const FullscreenContent = styled.div`
   width: 100%;
-  max-width: 768px;
+  max-width: ${MEDIA_BREAK}px;
   display: flex;
   align-items: center;
   flex-direction: column;
   padding: 32px 16px;
   flex: 1 0 auto;
+  @media (min-width: ${MEDIA_BREAK}px) {
+    padding-top: 40px;
+  }
 `;
 
 export const CodeOfConduct = styled.p`

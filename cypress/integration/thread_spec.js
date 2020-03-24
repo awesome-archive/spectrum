@@ -50,13 +50,9 @@ describe('Thread View', () => {
     });
 
     it('should prompt logged-out users to log in', () => {
-      const newMessage = 'A new message!';
       cy.get('[data-cy="thread-view"]').should('be.visible');
-      cy.get('[data-cy="join-channel-login-upsell"]').should('be.visible');
-      cy.get('[data-cy="thread-join-channel-upsell-button"]').should(
-        'be.visible'
-      );
-      cy.get('[data-cy="thread-join-channel-upsell-button"]').click();
+      cy.get('[data-cy="join-community-chat-upsell"]').should('be.visible');
+      cy.get('[data-cy="join-community-chat-upsell"]').click();
       cy.get('[data-cy="login-modal"]').should('be.visible');
     });
   });
@@ -129,19 +125,9 @@ describe('Thread View', () => {
         expect($p).to.have.length(1);
       });
 
-      // the other message should be unselected
+      // the other messages should be unselected
       cy.get('[data-cy="message"]').should($p => {
-        expect($p).to.have.length(1);
-      });
-
-      // load previous messages should be visible
-      cy.get('[data-cy="load-previous-messages"]')
-        .should('be.visible')
-        .click();
-
-      // all the messages should be loaded
-      cy.get('[data-cy="message"]').should($p => {
-        expect($p).to.have.length(4);
+        expect($p).to.have.length(3);
       });
     });
   });
@@ -161,18 +147,6 @@ describe('Thread View', () => {
         .first()
         .should('be.visible')
         .click({ force: true });
-      // message should be selected
-      cy.get('[data-cy="message-selected"]').should('be.visible');
-      // only one message should be selected
-      cy.get('[data-cy="message-selected"]').should($p => {
-        expect($p).to.have.length(1);
-      });
-      // the other three messages should be unselected
-      cy.get('[data-cy="message"]').should($p => {
-        expect($p).to.have.length(3);
-      });
-      // the url should contain the message query param
-      cy.url().should('contain', `${thread.id}?m=MTQ4MzIyNTE5OTk5OQ==`);
     });
   });
 
@@ -191,17 +165,7 @@ describe('Thread View', () => {
         .first()
         .should('be.visible')
         .click({ force: true });
-      // message should be selected
-      cy.get('[data-cy="message-selected"]').should('be.visible');
-      // only one message should be selected
-      cy.get('[data-cy="message-selected"]').should($p => {
-        expect($p).to.have.length(1);
-      });
-      // the other three messages should be unselected
-      cy.get('[data-cy="message"]').should($p => {
-        expect($p).to.have.length(3);
-      });
-      // the url should contain the message query param
+
       cy.url().should('contain', `?m=MTQ4MzIyNTE5OTk5OQ==`);
     });
   });
@@ -418,7 +382,10 @@ describe('edit message signed in', () => {
       .scrollIntoView()
       .should('be.visible');
 
-    cy.get('[data-cy="edit-message-cancel"]').click();
+    cy.get('[data-cy="edit-message-cancel"]')
+      .scrollIntoView()
+      .should('be.visible')
+      .click();
 
     cy.get('[data-cy="edit-message-input"]').should('not.be.visible');
 
@@ -452,8 +419,13 @@ describe('/new/thread', () => {
     const title = 'Some new thread';
     const body = "with some fresh content you've never seen before";
     cy.get('[data-cy="rich-text-editor"]').should('be.visible');
-    cy.get('[data-cy="composer-community-selector"]').should('be.visible');
-    cy.get('[data-cy="composer-channel-selector"]').should('be.visible');
+    cy.get('[data-cy="composer-community-selector"]')
+      .should('be.visible')
+      .select('Spectrum');
+    cy.get('[data-cy="composer-channel-selector"]')
+      .should('be.visible')
+      .select('# General');
+
     // Type title and body
     cy.get('[data-cy="composer-title-input"]').type(title);
     cy.get('[data-cy="rich-text-editor"]').type(body);
@@ -469,7 +441,7 @@ describe('/new/thread', () => {
     const body = 'with some persisting content';
     cy.get('[data-cy="rich-text-editor"]').should('be.visible');
     cy.get('[data-cy="composer-community-selector"]').should('be.visible');
-    cy.get('[data-cy="composer-channel-selector"]').should('be.visible');
+    cy.get('[data-cy="composer-channel-selector"]').should('not.be.visible');
     // Type title and body
     cy.get('[data-cy="composer-title-input"]').type(title);
     cy.get('[data-cy="rich-text-editor"]').type(body);

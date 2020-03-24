@@ -20,6 +20,7 @@ import { toPlainText, toState } from 'shared/draft-utils';
 import { sendNewDirectMessageEmailQueue } from 'shared/bull/queues';
 import type { Job, DirectMessageNotificationJobData } from 'shared/bull/types';
 import { signUser, signMessage } from 'shared/imgix';
+import { messageTypeObj } from 'shared/draft-utils/process-message-content';
 
 export default async (job: Job<DirectMessageNotificationJobData>) => {
   const { message: incomingMessage, userId: currentUserId } = job.data;
@@ -115,7 +116,7 @@ export default async (job: Job<DirectMessageNotificationJobData>) => {
         ...signedMessage,
         content: {
           body:
-            signedMessage.messageType === 'draftjs'
+            signedMessage.messageType === messageTypeObj.draftjs
               ? toPlainText(toState(JSON.parse(signedMessage.content.body)))
               : signedMessage.content.body,
         },
@@ -134,7 +135,7 @@ export default async (job: Job<DirectMessageNotificationJobData>) => {
       // store or update the notific  ation in the db to trigger a ui update in app
       return dbMethod(notification.id, recipient.userId);
     } else {
-      // if a notification already exists, we check if the user who is recieving the email has logged on since the priod message on the existing notification
+      // if a notification already exists, we check if the user who is receiving the email has logged on since the priod message on the existing notification
       // if the user has logged on since they saw the last message, and is no longer online, they should get an updated email
       // if the user has not logged on since the last notification message, we will skip this email until the next 30 minute window elapses in our `getExistingNotification` query.
       if (existing) {

@@ -1,20 +1,19 @@
 // @flow
 import theme from 'shared/theme';
 import styled from 'styled-components';
-import { zIndex } from '../globals';
+import { zIndex } from 'src/components/globals';
 
 export const Container = styled.div`
   display: grid;
   grid-gap: 16px;
   align-items: flex-end;
   padding: 16px 0;
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  grid-template-columns: repeat(2, 1fr);
 `;
 
 export const A = styled.a`
   display: flex;
+  grid-column: 1 / 2 span;
 `;
 
 export const SigninButton = styled.div`
@@ -26,9 +25,8 @@ export const SigninButton = styled.div`
   align-items: center;
   justify-content: flex-start;
   color: ${theme.text.reverse};
-  border-radius: 8px;
-  padding: 8px;
-  padding-right: 16px;
+  border-radius: 32px;
+  padding: 8px 16px;
   font-size: 15px;
   font-weight: 600;
   position: relative;

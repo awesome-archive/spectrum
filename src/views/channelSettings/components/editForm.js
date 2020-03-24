@@ -8,20 +8,24 @@ import editChannelMutation from 'shared/graphql/mutations/channel/editChannel';
 import type { EditChannelType } from 'shared/graphql/mutations/channel/editChannel';
 import type { GetChannelType } from 'shared/graphql/queries/channel/getChannel';
 import deleteChannelMutation from 'shared/graphql/mutations/channel/deleteChannel';
-import { openModal } from '../../../actions/modals';
-import { addToastWithTimeout } from '../../../actions/toasts';
-import { Notice } from '../../../components/listItems/style';
-import { Button, IconButton } from '../../../components/buttons';
-import { NullCard } from '../../../components/upsell';
+import { openModal } from 'src/actions/modals';
+import Tooltip from 'src/components/tooltip';
+import { addToastWithTimeout } from 'src/actions/toasts';
+import { Notice } from 'src/components/listItems/style';
+import { PrimaryOutlineButton } from 'src/components/button';
+import Icon from 'src/components/icon';
+import { NullCard } from 'src/components/upsell';
 import {
   Input,
   UnderlineInput,
   TextArea,
-} from '../../../components/formElements';
+  Error,
+} from 'src/components/formElements';
+import { SectionCard, SectionTitle } from 'src/components/settingsViews/style';
 import {
-  SectionCard,
-  SectionTitle,
-} from '../../../components/settingsViews/style';
+  whiteSpaceRegex,
+  oddHyphenRegex,
+} from 'src/views/viewHelpers/textValidationHelper';
 import {
   Form,
   TertiaryActionContainer,
@@ -29,14 +33,16 @@ import {
   Actions,
   GeneralNotice,
   Location,
-} from '../../../components/editForm/style';
+} from 'src/components/editForm/style';
 import { track, events, transformations } from 'src/helpers/analytics';
 import type { Dispatch } from 'redux';
 
 type State = {
   name: string,
+  nameError: boolean,
   slug: string,
   description: ?string,
+  descriptionError: boolean,
   isPrivate: boolean,
   channelId: string,
   channelData: Object,
@@ -56,8 +62,10 @@ class ChannelWithData extends React.Component<Props, State> {
 
     this.state = {
       name: channel.name,
+      nameError: false,
       slug: channel.slug,
       description: channel.description,
+      descriptionError: false,
       isPrivate: channel.isPrivate || false,
       channelId: channel.id,
       channelData: channel,
@@ -76,6 +84,10 @@ class ChannelWithData extends React.Component<Props, State> {
       newState[key] = !isPrivate;
     } else {
       newState[key] = value;
+
+      let hasInvalidChars = value.search(whiteSpaceRegex) >= 0;
+      let hasOddHyphens = value.search(oddHyphenRegex) >= 0;
+      this.updateStateOnError(newState, key, hasInvalidChars || hasOddHyphens);
     }
 
     this.setState(prevState => {
@@ -84,6 +96,14 @@ class ChannelWithData extends React.Component<Props, State> {
       });
     });
   };
+
+  updateStateOnError(state, key, setError) {
+    if (key === 'name') {
+      state['nameError'] = setError;
+    } else {
+      state['descriptionError'] = setError;
+    }
+  }
 
   save = e => {
     e.preventDefault();
@@ -141,12 +161,7 @@ class ChannelWithData extends React.Component<Props, State> {
           </b>
           ?
         </p>
-        {channelData.metaData.threads > 0 && (
-          <p>
-            The <b>{channelData.metaData.threads} threads</b> posted in this
-            channel will be deleted.
-          </p>
-        )}
+        <p>All conversations posted in this channel will be deleted.</p>
         <p>
           All messages, reactions, and media shared in this channel will be
           deleted.
@@ -173,7 +188,15 @@ class ChannelWithData extends React.Component<Props, State> {
   };
 
   render() {
-    const { name, slug, description, isPrivate, isLoading } = this.state;
+    const {
+      name,
+      nameError,
+      slug,
+      description,
+      descriptionError,
+      isPrivate,
+      isLoading,
+    } = this.state;
     const { channel } = this.props;
 
     if (!channel) {
@@ -184,7 +207,7 @@ class ChannelWithData extends React.Component<Props, State> {
           copy={'Want to make it?'}
         >
           {/* TODO: wire up button */}
-          <Button>Create</Button>
+          <PrimaryOutlineButton>Create</PrimaryOutlineButton>
         </NullCard>
       );
     } else {
@@ -205,6 +228,9 @@ class ChannelWithData extends React.Component<Props, State> {
             >
               Name
             </Input>
+            {nameError && (
+              <Error>Channel name can`t have invalid characters.</Error>
+            )}
             <UnderlineInput defaultValue={slug} disabled>
               {`URL: /${channel.community.slug}/`}
             </UnderlineInput>
@@ -216,7 +242,11 @@ class ChannelWithData extends React.Component<Props, State> {
             >
               Description
             </TextArea>
-
+            {descriptionError && (
+              <Error>
+                Oops, there may be some invalid characters - try fixing that up.
+              </Error>
+            )}
             {/* {slug !== 'general' &&
               <Checkbox
                 id="isPrivate"
@@ -227,16 +257,20 @@ class ChannelWithData extends React.Component<Props, State> {
               </Checkbox>} */}
             {isPrivate ? (
               <Description>
-                Only approved people on Spectrum can see the threads, messages,
-                and members in this channel. You can manually approve users who
-                request to join this channel.
+                Only channel members can see the threads, messages, and members
+                in this channel. You can manually approve users who request to
+                join this channel.
+              </Description>
+            ) : channel.community.isPrivate ? (
+              <Description>
+                Members in your private community will be able to join this
+                channel, post threads and messages, and will be able to see
+                other members.
               </Description>
             ) : (
               <Description>
                 Anyone on Spectrum can join this channel, post threads and
-                messages, and will be able to see other members. If you want to
-                create private channels,{' '}
-                <a href="mailto:hi@spectrum.chat">get in touch</a>.
+                messages, and will be able to see other members.
               </Description>
             )}
 
@@ -251,24 +285,27 @@ class ChannelWithData extends React.Component<Props, State> {
             )}
 
             <Actions>
-              <Button
+              <PrimaryOutlineButton
                 onClick={this.save}
+                disabled={nameError || descriptionError}
                 loading={isLoading}
-                dataCy="save-button"
+                data-cy="save-button"
               >
-                Save
-              </Button>
+                {isLoading ? 'Saving...' : 'Save'}
+              </PrimaryOutlineButton>
               {slug !== 'general' && (
                 <TertiaryActionContainer>
-                  <IconButton
-                    glyph="delete"
-                    tipText={`Delete ${name}`}
-                    tipLocation="top-right"
-                    color="text.placeholder"
-                    hoverColor="warn.alt"
-                    onClick={e => this.triggerDeleteChannel(e, channel.id)}
-                    dataCy="delete-channel-button"
-                  />
+                  <Tooltip content={`Delete ${name}`}>
+                    <span>
+                      <Icon
+                        glyph="delete"
+                        color="text.placeholder"
+                        hoverColor="warn.alt"
+                        onClick={e => this.triggerDeleteChannel(e, channel.id)}
+                        data-cy="delete-channel-button"
+                      />
+                    </span>
+                  </Tooltip>
                 </TertiaryActionContainer>
               )}
             </Actions>
@@ -276,7 +313,7 @@ class ChannelWithData extends React.Component<Props, State> {
             {slug === 'general' && (
               <GeneralNotice>
                 The General channel is the default channel for your community.
-                It can't be deleted or private, but you can still change the
+                It can’t be deleted or private, but you can still change the
                 name and description.
               </GeneralNotice>
             )}

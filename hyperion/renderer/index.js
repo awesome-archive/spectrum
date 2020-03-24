@@ -86,15 +86,7 @@ const renderer = (req: express$Request, res: express$Response) => {
   // Define the initial redux state
   const { t } = req.query;
 
-  const initialReduxState = {
-    dashboardFeed: {
-      activeThread: t ? t : '',
-      mountedWithActiveThread: t ? t : '',
-      search: {
-        isOpen: false,
-      },
-    },
-  };
+  const initialReduxState = {};
   // Create the Redux store
   const store = initStore(initialReduxState);
   let modules = [];
@@ -129,9 +121,9 @@ const renderer = (req: express$Request, res: express$Response) => {
         res.redirect(301, routerContext.url);
         return;
       }
-      // maintainance mode
+      // maintenance mode
       if (IN_MAINTENANCE_MODE) {
-        debug('maintainance mode enabled, sending 503');
+        debug('maintenance mode enabled, sending 503');
         res.status(503);
         res.set('Retry-After', '3600');
       } else {
@@ -190,7 +182,7 @@ const renderer = (req: express$Request, res: express$Response) => {
     })
     .catch(err => {
       // Avoid memory leaks, see https://github.com/styled-components/styled-components/issues/1624#issuecomment-425382979
-      sheet.complete();
+      sheet.seal();
       console.error(err);
       const sentryId =
         process.env.NODE_ENV === 'production'
